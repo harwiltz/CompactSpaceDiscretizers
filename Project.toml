@@ -1,0 +1,9 @@
+name = "CompactSpaceDiscretizers"
+uuid = "b92eb460-acb7-4467-b27f-d774199ac19f"
+authors = ["Harley Wiltzer <harley.wiltzer@mail.mcgill.ca>"]
+version = "0.1.0"
+
+[deps]
+Discretizers = "6e83dbb3-75ca-525b-8ae2-3751f0dd50b4"
+IntervalSets = "8197267c-284f-5f27-9208-e0e47529a953"
+PartialFunctions = "570af359-4316-4cb7-8c74-252c00c2016b"
