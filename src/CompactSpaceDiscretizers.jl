@@ -11,28 +11,51 @@ abstract type AbstractCompactSpaceDiscretizer end
 Discretizers.encode(d::AbstractCompactSpaceDiscretizer, s) = s
 Discretizers.decode(d::AbstractCompactSpaceDiscretizer, k) = k
 
-struct UniformLinearDiscretizer{S} <: AbstractCompactSpaceDiscretizer
+struct UniformLinearDiscretizer{S, I, R} <: AbstractCompactSpaceDiscretizer
     discretizers::Vector{S}
-    n::Int64
+    bins_per_dim::I
     ϕ::Vector{Int64}
+    n::Int64
+    intervals::Vector{R}
 end
 
-function UniformLinearDiscretizer(space::S, n::Int) where {S <: Vector{<: AbstractInterval}}
+intervals(disc::AbstractCompactSpaceDiscretizer) = disc.intervals
+
+Base.in(x, disc::AbstractCompactSpaceDiscretizer) = (x .∈ intervals(disc)) |> all
+
+function UniformLinearDiscretizer(
+    space::S,
+    bins_per_dim::Int;
+    I = UInt8
+) where {S <: Vector{<: AbstractInterval}}
     lows = flip(getproperty) $ :left .<| space
     highs = flip(getproperty) $ :right .<| space
-    UniformLinearDiscretizer(lows, highs, n)
+    UniformLinearDiscretizer(lows, highs, bins_per_dim; I = I, intervals = space)
 end
 
-function UniformLinearDiscretizer(low::Vector{F}, high::Vector{F}, n::Int) where {F <: Number}
-    ϕ = n .^ (Base.OneTo(length(low)) .- 1)
+function UniformLinearDiscretizer(
+    low::Vector{F},
+    high::Vector{F},
+    bins_per_dim::Int;
+    I = UInt8,
+    intervals::Union{Nothing, S} = nothing
+) where {F <: Number, S <: Vector{<: AbstractInterval}}
+    @assert (bins_per_dim > 0) "bins_per_dim must be greater than 0"
+    @assert (bins_per_dim <= typemax(I)) "Too many bins per dimension, try I > $(I)"
+    ϕ = bins_per_dim .^ (Base.OneTo(length(low)) .- 1)
+    n = bins_per_dim ^ length(low)
+    i = isnothing(intervals) ? zip(low, high) .|> Base.splat(ClosedInterval) : intervals
     UniformLinearDiscretizer(
-        LinearDiscretizer.(LinRange.(low, high, n)),
+        LinearDiscretizer.(LinRange.(low, high, bins_per_dim)),
+        bins_per_dim,
+        ϕ,
         n,
-        ϕ
+        i
     )
 end
 
 function Discretizers.encode(d::UniformLinearDiscretizer, x)
+    @assert (x ∈ d) "Value $(x) is not in the space of the discretizer"
     coords = Discretizers.encode.(d.discretizers, x)
     (coords .- 1)' * d.ϕ
 end
@@ -45,7 +68,8 @@ Ex: [2, 4, 3] -> 1 + 15 + 50 = 66
            66 -> {c = 3, b = 4, a = 2}
 """
 function Discretizers.decode(d::UniformLinearDiscretizer, n::Int)
-    coords = (n .% (d.n .* d.ϕ)) .÷ d.ϕ .+ 1
+    @assert (n <= d.n) "Value $(n) is not in the encoding space of the discretizer"
+    coords = (n .% (d.bins_per_dim .* d.ϕ)) .÷ d.ϕ .+ 1
     Discretizers.decode.(d.discretizers, coords)
 end
 
