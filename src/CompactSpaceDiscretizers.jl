@@ -55,8 +55,8 @@ function UniformLinearDiscretizer(
 end
 
 function Discretizers.encode(d::UniformLinearDiscretizer, x)
-    @assert (x ∈ d) "Value $(x) is not in the space of the discretizer"
-    coords = Discretizers.encode.(d.discretizers, x)
+    x̅ = clamp.(x, d.intervals)
+    coords = Discretizers.encode.(d.discretizers, x̅)
     (coords .- 1)' * d.ϕ
 end
 
