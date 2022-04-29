@@ -6,6 +6,7 @@ using PartialFunctions
 
 export AbstractCompactSpaceDiscretizer
 export UniformLinearDiscretizer
+export discrete_coords
 
 abstract type AbstractCompactSpaceDiscretizer end
 Discretizers.encode(d::AbstractCompactSpaceDiscretizer, s) = s
@@ -69,8 +70,10 @@ Ex: [2, 4, 3] -> 1 + 15 + 50 = 66
 """
 function Discretizers.decode(d::UniformLinearDiscretizer, n::Int)
     @assert (n <= d.n) "Value $(n) is not in the encoding space of the discretizer"
-    coords = (n .% (d.bins_per_dim .* d.ϕ)) .÷ d.ϕ .+ 1
+    coords = discrete_coords(d, n)
     Discretizers.decode.(d.discretizers, coords)
 end
+
+discrete_coords(d::UniformLinearDiscretizer, n::Int) = (n .% (d.bins_per_dim .* d.ϕ)) .÷ d.ϕ .+ 1 
 
 end # module
