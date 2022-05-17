@@ -25,6 +25,11 @@ intervals(disc::AbstractCompactSpaceDiscretizer) = disc.intervals
 
 Base.in(x, disc::AbstractCompactSpaceDiscretizer) = (x .∈ intervals(disc)) |> all
 
+"""
+    UniformLinearDiscretizer(space, bins_per_dim)
+
+A discretizer that discretizes each dimension into a fixed number `bins_per_dim` of bins.
+"""
 function UniformLinearDiscretizer(
     space::S,
     bins_per_dim::Int;
@@ -35,6 +40,12 @@ function UniformLinearDiscretizer(
     UniformLinearDiscretizer(lows, highs, bins_per_dim; I = I, intervals = space)
 end
 
+"""
+    UniformLinearDiscretizer(low, high, bins_per_dim[, intervals])
+
+A discretizer that discretizes each dimension into a fixed number `bins_per_dim` of bins.
+The parameters `low` and `high` denote the lower and upper dimensionwise limits.
+"""
 function UniformLinearDiscretizer(
     low::Vector{F},
     high::Vector{F},
@@ -75,6 +86,11 @@ function Discretizers.decode(d::AbstractCompactSpaceDiscretizer, n::Int)
     Discretizers.decode.(d.discretizers, coords)
 end
 
+"""
+    discrete_coords(discretizer, n)
+
+Given an encoding `n` of a point, determine the bin in each dimension that the point lies in.
+"""
 discrete_coords(d::UniformLinearDiscretizer, n::Int) = (n .% (d.bins_per_dim .* d.ϕ)) .÷ d.ϕ .+ 1 
 
 struct UniformLatticeDiscretizer{S, F, R} <: AbstractCompactSpaceDiscretizer
@@ -86,6 +102,12 @@ struct UniformLatticeDiscretizer{S, F, R} <: AbstractCompactSpaceDiscretizer
     intervals::Vector{R}
 end
 
+"""
+    UniformLatticeDiscretizer(space, ϵ)
+
+A discretizer that discretizes a space into a lattice where adjacent nodes differ by ϵ
+in a single dimension.
+"""
 function UniformLatticeDiscretizer(
     space::S,
     ϵ::Real,
@@ -96,6 +118,13 @@ function UniformLatticeDiscretizer(
     UniformLatticeDiscretizer(lows, highs, ϵ; R = R, intervals = space)
 end
 
+"""
+    UniformLatticeDiscretizer(low, high, ϵ[, intervals])
+
+A discretizer that discretizes a space into a lattice where adjacent nodes differ by ϵ
+in a single dimension.
+The parameters `low` and `high` denote the lower and upper dimensionwise limits.
+"""
 function UniformLatticeDiscretizer(
     low::Vector{F},
     high::Vector{F},
