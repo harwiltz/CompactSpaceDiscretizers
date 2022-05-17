@@ -110,8 +110,8 @@ in a single dimension.
 """
 function UniformLatticeDiscretizer(
     space::S,
-    ϵ::Real,
-) where {S <: Vector{<: AbstractInterval}}
+    ϵ::R,
+) where {S <: Vector{<: AbstractInterval}, R <: Real}
     lows = flip(getproperty) $ :left .<| space
     highs = flip(getproperty) $ :right .<| space
     UniformLatticeDiscretizer(lows, highs, ϵ; intervals = space)
