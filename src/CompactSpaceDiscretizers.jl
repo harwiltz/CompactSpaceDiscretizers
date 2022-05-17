@@ -70,7 +70,7 @@ end
 function Discretizers.encode(d::UniformLinearDiscretizer, x)
     x̅ = clamp.(x, d.intervals)
     coords = Discretizers.encode.(d.discretizers, x̅)
-    (coords .- 1)' * d.ϕ
+    (coords .- 1)' * d.ϕ + 1
 end
 
 """
@@ -149,9 +149,9 @@ end
 function Discretizers.encode(d::UniformLatticeDiscretizer, x)
     x̅ = clamp.(x, d.intervals)
     coords = Discretizers.encode.(d.discretizers, x̅)
-    (coords .- 1)' * d.ϕ
+    (coords .- 1)' * d.ϕ + 1
 end
 
-discrete_coords(d::UniformLatticeDiscretizer, n::Int) = (n .% (d.dim_nbins .* d.ϕ)) .÷ d.ϕ .+ 1 
+discrete_coords(d::UniformLatticeDiscretizer, n::Int) = ((n - 1) .% (d.dim_nbins .* d.ϕ)) .÷ d.ϕ .+ 1 
 
 end # module
