@@ -111,11 +111,10 @@ in a single dimension.
 function UniformLatticeDiscretizer(
     space::S,
     ϵ::Real,
-    R = Float64,
 ) where {S <: Vector{<: AbstractInterval}}
     lows = flip(getproperty) $ :left .<| space
     highs = flip(getproperty) $ :right .<| space
-    UniformLatticeDiscretizer(lows, highs, ϵ; R = R, intervals = space)
+    UniformLatticeDiscretizer(lows, highs, ϵ; intervals = space)
 end
 
 """
@@ -128,13 +127,12 @@ The parameters `low` and `high` denote the lower and upper dimensionwise limits.
 function UniformLatticeDiscretizer(
     low::Vector{F},
     high::Vector{F},
-    ϵ::Real;
-    R = Float64,
+    ϵ::R;
     intervals::Union{Nothing, S} = nothing
-) where {F <: Number, S <: Vector{<: AbstractInterval}}
+) where {F <: Number, R <: Real, S <: Vector{<: AbstractInterval}}
     @assert (ϵ > 0)
     dim_nbins = floor.((high - low) ./ ϵ .+ 1)
-    ϕ = fill(R(1), length(low))
+    ϕ = fill(F(1), length(low))
     ϕ[2:end] = cumprod(dim_nbins[1:end - 1])
     n = prod(dim_nbins)
     i = isnothing(intervals) ? zip(low, high) .|> Base.splat(ClosedInterval) : intervals
